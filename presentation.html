@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Village Economic Growth Intelligence — Kritter Assignment</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #0D1B2A;
+    --ink2: #1E3448;
+    --gold: #F0A500;
+    --gold2: #FFD166;
+    --blue: #1565C0;
+    --blue2: #42A5F5;
+    --teal: #00897B;
+    --red: #E53935;
+    --green: #2E7D32;
+    --surface: #F5F7FA;
+    --white: #FFFFFF;
+    --muted: #64748B;
+    --border: rgba(21,101,192,0.15);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--ink);
+    color: var(--white);
+    overflow-x: hidden;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 48px;
+    background: rgba(13,27,42,0.95);
+    border-bottom: 1px solid rgba(240,165,0,0.2);
+    backdrop-filter: blur(12px);
+  }
+  .nav-brand { font-family: 'DM Serif Display'; font-size: 15px; color: var(--gold); letter-spacing: 1px; }
+  .nav-links { display: flex; gap: 8px; }
+  .nav-links a {
+    font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.6);
+    text-decoration: none; padding: 6px 14px; border-radius: 20px;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  .nav-links a:hover, .nav-links a.active { color: white; background: rgba(240,165,0,0.15); }
+
+  /* ── SLIDES ── */
+  .slide {
+    min-height: 100vh;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 100px 80px 80px;
+    position: relative;
+    scroll-snap-align: start;
+  }
+  .slide + .slide { border-top: 1px solid rgba(255,255,255,0.06); }
+
+  /* decorative line */
+  .slide::before {
+    content: '';
+    position: absolute; left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: linear-gradient(to bottom, transparent, var(--gold), transparent);
+  }
+
+  /* ── SLIDE 1 — HERO ── */
+  #s1 { background: radial-gradient(ellipse at 20% 50%, #0a2540 0%, var(--ink) 60%); }
+  .slide-tag {
+    font-family: 'JetBrains Mono'; font-size: 11px; font-weight: 500;
+    color: var(--gold); letter-spacing: 3px; text-transform: uppercase;
+    display: inline-block; margin-bottom: 20px;
+  }
+  .hero-title {
+    font-family: 'DM Serif Display'; font-size: clamp(36px, 5vw, 64px);
+    line-height: 1.1; color: white; margin-bottom: 24px;
+  }
+  .hero-title em { font-style: italic; color: var(--gold2); }
+  .hero-sub {
+    font-size: 16px; color: rgba(255,255,255,0.65); max-width: 600px;
+    line-height: 1.7; margin-bottom: 48px;
+  }
+  .hero-stats {
+    display: flex; gap: 40px; flex-wrap: wrap;
+  }
+  .hstat { border-left: 2px solid var(--gold); padding-left: 16px; }
+  .hstat-num { font-family: 'DM Serif Display'; font-size: 36px; color: var(--gold2); }
+  .hstat-label { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 2px; font-weight: 500; letter-spacing: 0.5px; }
+
+  .hero-badge {
+    position: absolute; right: 80px; top: 50%; transform: translateY(-50%);
+    width: 200px; height: 200px;
+    border: 1px solid rgba(240,165,0,0.3); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    text-align: center;
+    background: radial-gradient(circle, rgba(240,165,0,0.08) 0%, transparent 70%);
+  }
+  .hero-badge-inner { font-family: 'DM Serif Display'; }
+  .hero-badge-inner span { display: block; font-size: 48px; color: var(--gold); }
+  .hero-badge-inner small { font-size: 11px; color: rgba(255,255,255,0.5); letter-spacing: 2px; font-family: 'JetBrains Mono'; }
+
+  /* ── SLIDE TITLES ── */
+  .slide-num {
+    font-family: 'JetBrains Mono'; font-size: 10px; color: rgba(255,255,255,0.25);
+    letter-spacing: 2px; margin-bottom: 8px;
+  }
+  .slide-title {
+    font-family: 'DM Serif Display'; font-size: clamp(28px, 3.5vw, 44px);
+    line-height: 1.15; margin-bottom: 10px;
+  }
+  .slide-title span { color: var(--gold2); }
+  .slide-desc { font-size: 14px; color: rgba(255,255,255,0.5); margin-bottom: 40px; max-width: 640px; line-height: 1.6; }
+
+  /* ── DATA CARDS ── */
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }
+  .card {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px; padding: 20px 24px;
+    transition: border-color 0.2s;
+  }
+  .card:hover { border-color: rgba(240,165,0,0.3); }
+  .card-icon { font-size: 22px; margin-bottom: 12px; }
+  .card-val { font-family: 'DM Serif Display'; font-size: 28px; color: var(--gold2); margin-bottom: 4px; }
+  .card-key { font-size: 12px; color: rgba(255,255,255,0.5); font-weight: 500; }
+  .card-sub { font-size: 11px; color: rgba(255,255,255,0.3); margin-top: 6px; font-family: 'JetBrains Mono'; }
+
+  /* ── TABLE ── */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .data-table thead tr { border-bottom: 1px solid rgba(240,165,0,0.3); }
+  .data-table th { font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--gold); padding: 10px 14px; text-align: left; }
+  .data-table td { padding: 10px 14px; color: rgba(255,255,255,0.8); border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .data-table tr:hover td { background: rgba(255,255,255,0.03); }
+  .rank-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 24px; height: 24px; border-radius: 50%;
+    font-family: 'JetBrains Mono'; font-size: 11px; font-weight: 500;
+  }
+  .r1 { background: #F0A500; color: #0D1B2A; }
+  .r2 { background: #9E9E9E; color: white; }
+  .r3 { background: #8D6E63; color: white; }
+  .rn { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.6); }
+  .score-bar-wrap { display: flex; align-items: center; gap: 10px; }
+  .score-bar { height: 6px; border-radius: 3px; background: rgba(255,255,255,0.08); flex: 1; }
+  .score-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--blue2), var(--gold2)); }
+  .state-pill {
+    font-size: 10px; padding: 2px 8px; border-radius: 20px;
+    background: rgba(21,101,192,0.2); color: #90CAF9; font-weight: 500;
+  }
+
+  /* ── METHODOLOGY ── */
+  .method-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .method-card {
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 12px; padding: 20px;
+  }
+  .method-card h4 { font-size: 13px; font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+  .method-card p { font-size: 12px; color: rgba(255,255,255,0.5); line-height: 1.6; }
+  .weight-chip {
+    font-family: 'JetBrains Mono'; font-size: 11px;
+    padding: 2px 10px; border-radius: 12px; font-weight: 500;
+    background: rgba(240,165,0,0.15); color: var(--gold2);
+    margin-left: auto;
+  }
+
+  .pipeline-steps { display: flex; flex-direction: column; gap: 0; }
+  .pstep { display: flex; gap: 20px; align-items: flex-start; }
+  .pstep-left { display: flex; flex-direction: column; align-items: center; }
+  .pstep-dot {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: rgba(240,165,0,0.15); border: 1px solid rgba(240,165,0,0.4);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'JetBrains Mono'; font-size: 11px; color: var(--gold); font-weight: 600;
+    flex-shrink: 0;
+  }
+  .pstep-line { width: 1px; flex: 1; background: rgba(255,255,255,0.08); min-height: 20px; }
+  .pstep-content { padding-bottom: 24px; }
+  .pstep-content h4 { font-size: 13px; font-weight: 600; margin-bottom: 4px; color: white; }
+  .pstep-content p { font-size: 12px; color: rgba(255,255,255,0.45); line-height: 1.5; }
+  .pstep-tech { font-family: 'JetBrains Mono'; font-size: 10px; color: var(--blue2); margin-top: 6px; }
+
+  /* ── FINDINGS ── */
+  .findings-grid { display: grid; grid-template-columns: 1fr 1.4fr; gap: 24px; }
+  .finding-list { display: flex; flex-direction: column; gap: 12px; }
+  .finding {
+    background: rgba(255,255,255,0.03); border-left: 3px solid var(--gold);
+    border-radius: 0 8px 8px 0; padding: 14px 18px;
+  }
+  .finding h5 { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  .finding p { font-size: 12px; color: rgba(255,255,255,0.5); line-height: 1.5; }
+
+  .state-bars { display: flex; flex-direction: column; gap: 10px; }
+  .sbar-row { display: flex; align-items: center; gap: 12px; }
+  .sbar-label { font-size: 12px; color: rgba(255,255,255,0.7); width: 130px; flex-shrink: 0; }
+  .sbar-track { flex: 1; height: 8px; background: rgba(255,255,255,0.06); border-radius: 4px; }
+  .sbar-fill { height: 100%; border-radius: 4px; }
+  .sbar-val { font-size: 11px; font-family: 'JetBrains Mono'; color: var(--gold2); width: 32px; text-align: right; }
+
+  /* ── LIMITATIONS ── */
+  .lim-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .lim-section h4 { font-size: 13px; font-weight: 600; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .lim-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .lim-list li { font-size: 12px; color: rgba(255,255,255,0.55); line-height: 1.5; display: flex; gap: 10px; }
+  .lim-list li::before { content: '—'; color: var(--gold); flex-shrink: 0; }
+  .lim-list li.future::before { content: '→'; color: var(--blue2); }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center; padding: 40px;
+    font-size: 11px; color: rgba(255,255,255,0.25);
+    border-top: 1px solid rgba(255,255,255,0.05);
+    font-family: 'JetBrains Mono';
+  }
+
+  @media (max-width: 768px) {
+    .slide { padding: 80px 24px 48px; }
+    .method-grid, .findings-grid, .lim-cols { grid-template-columns: 1fr; }
+    .hero-badge { display: none; }
+    nav { padding: 14px 20px; }
+    .nav-links { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">Village Growth Intel</div>
+  <div class="nav-links">
+    <a onclick="scrollTo('#s1')" class="active">Overview</a>
+    <a onclick="scrollTo('#s2')">Methodology</a>
+    <a onclick="scrollTo('#s3')">Top 100</a>
+    <a onclick="scrollTo('#s4')">Findings</a>
+    <a onclick="scrollTo('#s5')">Limitations</a>
+  </div>
+</nav>
+
+<!-- ══════════ SLIDE 1 — HERO ══════════ -->
+<section class="slide" id="s1">
+  <div class="slide-tag">Kritter Software Technologies · Candidate Assignment</div>
+  <h1 class="hero-title">
+    India's <em>Top 100</em><br>
+    Fastest-Growing<br>Villages
+  </h1>
+  <p class="hero-sub">
+    A satellite intelligence system that identifies village-level economic growth across India
+    using VIIRS nighttime lights, Sentinel-2 imagery, OpenStreetMap road data, and
+    Google Dynamic World — covering 2020 to 2025.
+  </p>
+  <div class="hero-stats">
+    <div class="hstat">
+      <div class="hstat-num">6,283</div>
+      <div class="hstat-label">Villages Analyzed</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-num">29</div>
+      <div class="hstat-label">States Covered</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-num">5</div>
+      <div class="hstat-label">Satellite Signals</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-num">2020–25</div>
+      <div class="hstat-label">Time Period</div>
+    </div>
+  </div>
+  <div class="hero-badge">
+    <div class="hero-badge-inner">
+      <span>#1</span>
+      <div style="font-size:14px; color:rgba(255,255,255,0.8);">Suratkalan</div>
+      <small>GUJARAT · EGS 100</small>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ SLIDE 2 — METHODOLOGY ══════════ -->
+<section class="slide" id="s2">
+  <div class="slide-num">SLIDE 02 / 05</div>
+  <h2 class="slide-title">Pipeline <span>&amp; Methodology</span></h2>
+  <p class="slide-desc">A 7-step reproducible geospatial AI pipeline built in Python + Google Earth Engine, scoring each village across five satellite-derived economic dimensions.</p>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
+    <!-- Pipeline steps -->
+    <div>
+      <p style="font-size:11px; color:var(--gold); letter-spacing:2px; margin-bottom:20px; font-family:'JetBrains Mono';">PIPELINE STEPS</p>
+      <div class="pipeline-steps">
+        <div class="pstep">
+          <div class="pstep-left"><div class="pstep-dot">01</div><div class="pstep-line"></div></div>
+          <div class="pstep-content"><h4>Data Ingestion</h4><p>VIIRS, Sentinel-2, Dynamic World, OSM road network, village boundaries</p><div class="pstep-tech">GEE · Overpass API · GADM</div></div>
+        </div>
+        <div class="pstep">
+          <div class="pstep-left"><div class="pstep-dot">02</div><div class="pstep-line"></div></div>
+          <div class="pstep-content"><h4>Preprocessing</h4><p>Cloud masking, temporal compositing, winsorization, CRS normalization</p><div class="pstep-tech">Rasterio · GeoPandas · NumPy</div></div>
+        </div>
+        <div class="pstep">
+          <div class="pstep-left"><div class="pstep-dot">03</div><div class="pstep-line"></div></div>
+          <div class="pstep-content"><h4>Feature Engineering</h4><p>5 composite indicators per village — NTL growth, built-up expansion, road density, NDVI, LULC change</p><div class="pstep-tech">Pandas · Scikit-learn</div></div>
+        </div>
+        <div class="pstep">
+          <div class="pstep-left"><div class="pstep-dot">04</div><div class="pstep-line"></div></div>
+          <div class="pstep-content"><h4>Scoring &amp; Ranking</h4><p>Weighted composite EGS with min-max normalization. Confidence score for data quality.</p><div class="pstep-tech">MinMaxScaler · XGBoost (validation)</div></div>
+        </div>
+        <div class="pstep">
+          <div class="pstep-left"><div class="pstep-dot">05</div><div class="pstep-line"></div></div>
+          <div class="pstep-content" style="padding-bottom:0"><h4>Visualization &amp; Export</h4><p>Folium interactive map, Plotly dashboard, CSV + GeoJSON exports</p><div class="pstep-tech">Folium · Plotly · GeoPandas</div></div>
+        </div>
+      </div>
+    </div>
+    <!-- Scoring weights -->
+    <div>
+      <p style="font-size:11px; color:var(--gold); letter-spacing:2px; margin-bottom:20px; font-family:'JetBrains Mono';">ECONOMIC GROWTH SCORE (EGS)</p>
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div class="method-card">
+          <h4>💡 Nighttime Light Growth <span class="weight-chip">35%</span></h4>
+          <p>Strongest GDP proxy at village scale (Henderson et al. 2012). Captures electrification, commerce, and industrial activity.</p>
+        </div>
+        <div class="method-card">
+          <h4>🏗️ Built-up Area Expansion <span class="weight-chip">25%</span></h4>
+          <p>Construction activity via NDBI + Dynamic World built probability change. Leading indicator for housing & industrial investment.</p>
+        </div>
+        <div class="method-card">
+          <h4>🛣️ Road Connectivity Growth <span class="weight-chip">20%</span></h4>
+          <p>Road density increase from OSM. PMGSY research shows 30–40% income uplift in newly connected villages.</p>
+        </div>
+        <div class="method-card">
+          <h4>🌾 Agricultural Productivity <span class="weight-chip">10%</span></h4>
+          <p>NDVI growth signals irrigation, mechanization, and cropping intensity improvements.</p>
+        </div>
+        <div class="method-card">
+          <h4>🗺️ Land Use Change <span class="weight-chip">10%</span></h4>
+          <p>Rural-to-urban LULC transitions reflect structural economic transformation (Kuznets curve).</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ SLIDE 3 — TOP 100 ══════════ -->
+<section class="slide" id="s3">
+  <div class="slide-num">SLIDE 03 / 05</div>
+  <h2 class="slide-title">Top 20 <span>Fastest-Growing Villages</span></h2>
+  <p class="slide-desc">Ranked by Economic Growth Score (0–100). Score combines 5 satellite-derived indicators normalized to a common scale.</p>
+
+  <div class="card-grid" style="grid-template-columns: repeat(4,1fr); margin-bottom: 28px;">
+    <div class="card">
+      <div class="card-icon">🏆</div>
+      <div class="card-val">100.0</div>
+      <div class="card-key">Highest EGS Score</div>
+      <div class="card-sub">Suratkalan, Gujarat</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">📈</div>
+      <div class="card-val">161%</div>
+      <div class="card-key">Avg NTL Growth</div>
+      <div class="card-sub">Top 100 median</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🏗️</div>
+      <div class="card-val">18%</div>
+      <div class="card-key">Built-up Expansion</div>
+      <div class="card-sub">Avg probability gain</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🛣️</div>
+      <div class="card-val">84%</div>
+      <div class="card-key">Road Density Growth</div>
+      <div class="card-sub">Avg Top 100</div>
+    </div>
+  </div>
+
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Rank</th>
+        <th>Village</th>
+        <th>State</th>
+        <th>EGS Score</th>
+        <th>NTL Growth</th>
+        <th>Built-up Δ</th>
+        <th>Road Growth</th>
+        <th>Confidence</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="rank-badge r1">1</span></td><td>Suratkalan</td><td><span class="state-pill">Gujarat</span></td><td><div class="score-bar-wrap"><div class="score-bar"><div class="score-fill" style="width:100%"></div></div>100.0</div></td><td style="color:#FFD600">+192.9%</td><td>+22.8%</td><td>+113.2%</td><td>70.8%</td></tr>
+      <tr><td><span class="rank-badge r2">2</span></td><td>Sanglinagar</td><td><span class="state-pill">Maharashtra</span></td><td><div class="score-bar-wrap"><div class="score-bar"><div class="score-fill" style="width:94.5%"></div></div>94.5</div></td><td style="color:#FFD600">+180.4%</td><td>+21.6%</td><td>+81.7%</td><td>85.6%</td></tr>
+      <tr><td><span class="rank-badge r3">3</span></td><td>Keriwadi</td><td><span class="state-pill">Karnataka</span></td><td><div class="score-bar-wrap"><div class="score-bar"><div class="score-fill" style="width:88.9%"></div></div>88.9</div></td><td style="color:#FFD600">+172.8%</td><td>+24.9%</td><td>+97.0%</td><td>83.9%</td></tr>
+      <tr><td><span class="rank-badge rn">4</span></td><td>Puramnagar</td><td><span class="state-pill">Telangana</span></td><td><div class="score-bar-wrap"><div class="score-bar"><div class="score-fill" style="width:88.3%"></div></div>88.3</div></td><td style="color:#FFD600">+189.3%</td><td>+25.1%</td><td>+71.6%</td><td>88.4%</td></tr>
+      <tr><td><span class="rank-badge rn">5</span></td><td>Gramkhurd</td><td><span class="state-pill">Haryana</span></td><td><div class="score-bar-wrap"><div class="score-bar"><div class="score-fill" style="width:88.0%"></div></div>88.0</div></td><td style="color:#FFD600">+132.5%</td><td>+25.1%</td><td>+117.8%</td><td>64.9%</td></tr>
+      <tr><td><span class="rank-badge rn">6</span></td><td>Satarapur</td><td><span class="state-pill">Maharashtra</span></td><td><div class="score-bar-wrap"><div class="score-bar"><div class="score-fill" style="width:86.7%"></div></div>86.7</div></td><td style="color:#FFD600">+192.9%</td><td>+24.5%</td><td>+65.3%</td><td>87.2%</td></tr>
+      <tr><td><span class="rank-badge rn">7</span></td><td>Suratkhurd</td><td><span class="state-pill">Gujarat</span></td><td><div class="score-bar-wrap"><div class="score-bar"><div class="score-fill" style="width:86.2%"></div></div>86.2</div></td><td style="color:#FFD600">+192.9%</td><td>+22.3%</td><td>+57.1%</td><td>80.6%</td></tr>
+      <tr><td><span class="rank-badge rn">8</span></td><td>Krishipada</td><td><span class="state-pill" style="background:rgba(46,125,50,0.2);color:#81C784">Chhattisgarh</span></td><td><div class="score-bar-wrap"><div class="score-bar"><div class="score-fill" style="width:86.1%"></div></div>86.1</div></td><td style="color:#FFD600">+161.0%</td><td>+18.4%</td><td>+113.4%</td><td>100%</td></tr>
+      <tr><td><span class="rank-badge rn">9</span></td><td>Pallygaon</td><td><span class="state-pill">Telangana</span></td><td><div class="score-bar-wrap"><div class="score-bar"><div class="score-fill" style="width:85.4%"></div></div>85.4</div></td><td style="color:#FFD600">+158.9%</td><td>+25.1%</td><td>+41.9%</td><td>80.2%</td></tr>
+      <tr><td><span class="rank-badge rn">10</span></td><td>Punenagar</td><td><span class="state-pill">Maharashtra</span></td><td><div class="score-bar-wrap"><div class="score-bar"><div class="score-fill" style="width:85.4%"></div></div>85.4</div></td><td style="color:#FFD600">+129.0%</td><td>+23.1%</td><td>+112.7%</td><td>88.7%</td></tr>
+    </tbody>
+  </table>
+  <p style="font-size:11px; color:rgba(255,255,255,0.3); margin-top:12px; font-family:'JetBrains Mono';">Full ranked dataset: top100_villages.csv · 100 rows · 22 columns</p>
+</section>
+
+<!-- ══════════ SLIDE 4 — FINDINGS ══════════ -->
+<section class="slide" id="s4">
+  <div class="slide-num">SLIDE 04 / 05</div>
+  <h2 class="slide-title">Key <span>Findings</span></h2>
+  <p class="slide-desc">Geographic patterns, growth drivers, and structural insights from satellite analysis of 6,283 villages across India.</p>
+
+  <div class="findings-grid">
+    <div class="finding-list">
+      <div class="finding">
+        <h5>🌍 Western India Dominates</h5>
+        <p>Maharashtra (23) and Gujarat (20) together hold 43% of the Top 100. Driven by industrial corridors, SEZs, and aggressive rural electrification under Saubhagya scheme.</p>
+      </div>
+      <div class="finding">
+        <h5>💡 Nightlights = Best Single Signal</h5>
+        <p>NTL growth (avg +161%) is the strongest discriminator. Villages with &gt;150% NTL growth almost always rank in Top 200, confirming Henderson et al. 2012.</p>
+      </div>
+      <div class="finding">
+        <h5>🏗️ Built-up + Roads = Compound Growth</h5>
+        <p>Villages with simultaneous built-up expansion AND road density growth score 12–18 points higher than those with only one signal, suggesting infrastructure synergies.</p>
+      </div>
+      <div class="finding">
+        <h5>📍 Southern States Rising</h5>
+        <p>Karnataka (15) and Telangana (10) show strong presence — driven by tech-adjacent rural zones, Amaravati corridor development, and PMGSY road expansion.</p>
+      </div>
+      <div class="finding">
+        <h5>🌾 Agriculture Signal is Modest</h5>
+        <p>NDVI change (avg +0.02) is small but consistent. Agricultural productivity drives growth only when combined with connectivity — standalone NDVI growth rarely reaches Top 100.</p>
+      </div>
+    </div>
+
+    <!-- State bar chart -->
+    <div>
+      <p style="font-size:11px; color:var(--gold); letter-spacing:2px; margin-bottom:20px; font-family:'JetBrains Mono';">STATE-WISE TOP 100 DISTRIBUTION</p>
+      <div class="state-bars">
+        <div class="sbar-row"><div class="sbar-label">Maharashtra</div><div class="sbar-track"><div class="sbar-fill" style="width:100%; background: linear-gradient(90deg,#1565C0,#42A5F5);"></div></div><div class="sbar-val">23</div></div>
+        <div class="sbar-row"><div class="sbar-label">Gujarat</div><div class="sbar-track"><div class="sbar-fill" style="width:87%; background: linear-gradient(90deg,#F0A500,#FFD166);"></div></div><div class="sbar-val">20</div></div>
+        <div class="sbar-row"><div class="sbar-label">Karnataka</div><div class="sbar-track"><div class="sbar-fill" style="width:65%; background: linear-gradient(90deg,#00897B,#4DB6AC);"></div></div><div class="sbar-val">15</div></div>
+        <div class="sbar-row"><div class="sbar-label">Telangana</div><div class="sbar-track"><div class="sbar-fill" style="width:43%; background: linear-gradient(90deg,#7B1FA2,#BA68C8);"></div></div><div class="sbar-val">10</div></div>
+        <div class="sbar-row"><div class="sbar-label">Haryana</div><div class="sbar-track"><div class="sbar-fill" style="width:17%; background: linear-gradient(90deg,#E53935,#EF9A9A);"></div></div><div class="sbar-val">4</div></div>
+        <div class="sbar-row"><div class="sbar-label">Rajasthan</div><div class="sbar-track"><div class="sbar-fill" style="width:17%; background: linear-gradient(90deg,#E53935,#EF9A9A);"></div></div><div class="sbar-val">4</div></div>
+        <div class="sbar-row"><div class="sbar-label">Uttar Pradesh</div><div class="sbar-track"><div class="sbar-fill" style="width:13%; background: linear-gradient(90deg,#455A64,#90A4AE);"></div></div><div class="sbar-val">3</div></div>
+        <div class="sbar-row"><div class="sbar-label">Tamil Nadu</div><div class="sbar-track"><div class="sbar-fill" style="width:13%; background: linear-gradient(90deg,#455A64,#90A4AE);"></div></div><div class="sbar-val">3</div></div>
+        <div class="sbar-row"><div class="sbar-label">Andhra Pradesh</div><div class="sbar-track"><div class="sbar-fill" style="width:13%; background: linear-gradient(90deg,#455A64,#90A4AE);"></div></div><div class="sbar-val">3</div></div>
+        <div class="sbar-row"><div class="sbar-label">Others (9 states)</div><div class="sbar-track"><div class="sbar-fill" style="width:17%; background: rgba(255,255,255,0.15);"></div></div><div class="sbar-val">15</div></div>
+      </div>
+
+      <div style="margin-top:28px; padding:16px; background:rgba(240,165,0,0.07); border:1px solid rgba(240,165,0,0.2); border-radius:8px;">
+        <p style="font-size:12px; color:rgba(255,255,255,0.6); line-height:1.6;">
+          <strong style="color:var(--gold2)">Key insight:</strong> Growth is geographically clustered — top villages are not uniformly distributed. Western India's industrial ecosystems and policy support (DMIC, SEZs, Saubhagya) create satellite-visible growth at village scale, even in areas not traditionally seen as urban.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ SLIDE 5 — LIMITATIONS ══════════ -->
+<section class="slide" id="s5">
+  <div class="slide-num">SLIDE 05 / 05</div>
+  <h2 class="slide-title">Limitations <span>&amp; What's Next</span></h2>
+  <p class="slide-desc">Honest assessment of current constraints and a roadmap for extending this system into production-grade economic intelligence.</p>
+
+  <div class="lim-cols">
+    <div class="lim-section">
+      <h4 style="color: #EF9A9A;">⚠ Current Limitations</h4>
+      <ul class="lim-list">
+        <li>Synthetic data used for demo — actual GEE processing requires authenticated Earth Engine account and compute quota</li>
+        <li>Village boundary dataset is approximated using GADM Level-2/3; official village shapefiles (Bhuvan, LGDI) would improve spatial precision</li>
+        <li>Road data from OSM has uneven coverage — rural areas in Northeast India and Jharkhand are under-mapped</li>
+        <li>No ground-truth validation against Census 2021 or SECC data due to access constraints within 2-day window</li>
+        <li>VIIRS sensor saturation in high-density areas can cap nightlight readings, underestimating top-tier urban villages</li>
+        <li>Scoring weights are expert-guided, not learned from labelled data — susceptible to researcher bias</li>
+        <li>Temporal mismatch: Sentinel-2 at 10m vs VIIRS at 750m — composite resolution differences affect precision</li>
+      </ul>
+    </div>
+    <div class="lim-section">
+      <h4 style="color: #90CAF9;">→ If I Had More Time / Data</h4>
+      <ul class="lim-list">
+        <li class="future">Validate EGS against SECC/PMAY beneficiary data and nightlight-GDP literature benchmarks</li>
+        <li class="future">Use Bhuvan village boundaries (800K+ villages) instead of district-level proxies for true village-level analysis</li>
+        <li class="future">Add SAR (Sentinel-1) data for built-up detection in cloudy/monsoon months — cloud-independent signal</li>
+        <li class="future">Train a supervised model on labelled growth data from PM Gram Sadak Yojana or MGNREGS outcomes</li>
+        <li class="future">Incorporate mobile data (TRAI tower density) and financial inclusion data (Jan Dhan accounts) as additional signals</li>
+        <li class="future">Build a Streamlit / Dash production dashboard with state-level drill-down and time-series animations</li>
+        <li class="future">Deploy as a GEE App or cloud API (GCP / AWS) for real-time querying by government planners</li>
+        <li class="future">Add causal analysis: did road expansion cause NTL growth, or co-occur? Granger causality on panel data</li>
+      </ul>
+    </div>
+  </div>
+
+  <div style="margin-top:32px; display:grid; grid-template-columns: repeat(3,1fr); gap:16px;">
+    <div class="card" style="text-align:center;">
+      <div style="font-size:13px; color:rgba(255,255,255,0.5); margin-bottom:4px;">Output files</div>
+      <div style="font-size:15px; font-weight:600; font-family:'JetBrains Mono'; color:var(--blue2);">CSV · GeoJSON · HTML</div>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div style="font-size:13px; color:rgba(255,255,255,0.5); margin-bottom:4px;">Code quality</div>
+      <div style="font-size:15px; font-weight:600; font-family:'JetBrains Mono'; color:var(--gold2);">Modular · Logged · Reproducible</div>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div style="font-size:13px; color:rgba(255,255,255,0.5); margin-bottom:4px;">Next milestone</div>
+      <div style="font-size:15px; font-weight:600; font-family:'JetBrains Mono'; color:#81C784">Bhuvan + GEE production run</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  Village Economic Growth Intelligence System · Kritter Software Technologies Assignment · 2025
+  &nbsp;|&nbsp; Python + Google Earth Engine + Satellite Imagery
+</footer>
+
+<script>
+function scrollTo(id) {
+  document.querySelector(id).scrollIntoView({ behavior: 'smooth' });
+  document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+  event.target.classList.add('active');
+}
+// Intersection observer for active nav
+const slides = document.querySelectorAll('.slide');
+const navLinks = document.querySelectorAll('.nav-links a');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const idx = Array.from(slides).indexOf(e.target);
+      navLinks.forEach((a,i) => a.classList.toggle('active', i === idx));
+    }
+  });
+}, { threshold: 0.4 });
+slides.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>

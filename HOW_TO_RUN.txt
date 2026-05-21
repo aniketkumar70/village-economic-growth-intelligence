@@ -1,0 +1,302 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║      VILLAGE ECONOMIC GROWTH INTELLIGENCE — STEP BY STEP GUIDE      ║
+║      Kritter Software Technologies — Assignment Submission           ║
+╚══════════════════════════════════════════════════════════════════════╝
+═══════════════════════════════════════════════════════════════════════
+OPTION A — RUNNING LOCALLY (Recommended for full control)
+═══════════════════════════════════════════════════════════════════════
+
+STEP 1 — Prerequisites
+───────────────────────
+Make sure you have:
+  • Python 3.9 or higher installed
+  • pip (comes with Python)
+
+Check by running:
+  python --version
+  pip --version
+
+
+STEP 2 — Download the project
+───────────────────────────────
+Option 1: From Google Drive / GitHub link (submit folder)
+Option 2: If you have the files locally, unzip them.
+
+You should see this structure:
+  village_economic_growth/
+  ├── README.md
+  ├── requirements.txt
+  ├── src/
+  │   ├── pipeline.py
+  │   └── visualization.py
+  ├── reports/
+  │   └── presentation.html
+  └── data/outputs/   ← outputs go here
+
+
+STEP 3 — Create a virtual environment (optional but recommended)
+─────────────────────────────────────────────────────────────────
+  # On Windows:
+  python -m venv venv
+  venv\Scripts\activate
+
+  # On Mac/Linux:
+  python3 -m venv venv
+  source venv/bin/activate
+
+
+STEP 4 — Install dependencies
+───────────────────────────────
+  cd village_economic_growth
+  pip install -r requirements.txt
+
+  This installs: geopandas, folium, plotly, scikit-learn, xgboost, etc.
+  Takes about 2–3 minutes first time.
+
+
+STEP 5 — Run the main pipeline
+────────────────────────────────
+  python src/pipeline.py
+
+  You will see logs like:
+    05:38:36 | INFO | Village Economic Growth Intelligence System
+    05:38:37 | INFO | Generated 6,283 village records across 29 states
+    05:38:37 | INFO | Preprocessing complete. Retained 6,283 records.
+    05:38:37 | INFO | Feature engineering complete. Shape: (6283, 29)
+    05:38:38 | INFO | EGS computed. Score range: 0.0 – 100.0
+    05:38:38 | INFO | Top 100 villages identified.
+    05:38:38 | INFO | CSV saved: data/outputs/top100_villages.csv
+    05:38:38 | INFO | Pipeline complete!
+
+  ✅ This generates: CSV, GeoJSON, and ranked dataset in data/outputs/
+
+
+STEP 6 — Generate visualizations
+──────────────────────────────────
+  python -c "
+import pandas as pd, sys
+sys.path.insert(0, 'src')
+from visualization import run_visualizations
+
+top100 = pd.read_csv('data/outputs/top100_villages.csv')
+all_v  = pd.read_csv('data/outputs/all_villages_ranked.csv')
+
+top100['growth_percentile'] = top100['economic_growth_score'].rank(pct=True)*100
+top100['growth_tier'] = pd.cut(top100['growth_percentile'],
+    bins=[0,50,75,90,97,100], labels=['Baseline','Moderate','High','Very High','Elite'])
+all_v['growth_percentile'] = all_v['economic_growth_score'].rank(pct=True)*100
+all_v['growth_tier'] = pd.cut(all_v['growth_percentile'],
+    bins=[0,50,75,90,97,100], labels=['Baseline','Moderate','High','Very High','Elite'])
+
+paths = run_visualizations(top100, all_v)
+print('Done!', paths)
+  "
+
+  ✅ This generates: interactive map, plotly dashboard, PNG charts
+
+
+STEP 7 — View your outputs
+───────────────────────────
+Open these files in your browser:
+
+  📍 Interactive Map:
+      data/outputs/village_growth_map.html
+      → Double-click to open in browser
+      → See heatmap of all villages + clickable Top 100 markers
+
+  📊 Plotly Dashboard:
+      data/outputs/growth_dashboard.html
+      → Interactive charts — hover, zoom, filter
+
+  📋 Ranked Dataset:
+      data/outputs/top100_villages.csv
+      → Open in Excel or Google Sheets
+
+  🗺️ GeoJSON (for QGIS / ArcGIS):
+      data/outputs/top100_villages.geojson
+
+  🖼️ Static Chart:
+      data/outputs/growth_charts.png
+
+  📄 Presentation:
+      reports/presentation.html
+      → Open in browser — full 5-slide deck with nav
+
+
+═══════════════════════════════════════════════════════════════════════
+OPTION B — RUNNING ON GOOGLE COLAB (No installation needed)
+═══════════════════════════════════════════════════════════════════════
+
+STEP 1 — Open Google Colab
+────────────────────────────
+  Go to: https://colab.research.google.com
+  Click: File → New Notebook
+
+
+STEP 2 — Install libraries (Cell 1)
+──────────────────────────────────────
+  Paste and run:
+
+    !pip install geopandas folium plotly scikit-learn xgboost scipy seaborn -q
+
+
+STEP 3 — Upload pipeline file
+───────────────────────────────
+  Option A: Upload src/pipeline.py via the Files panel (left sidebar)
+  
+  Option B: Paste the entire pipeline.py code directly into a cell
+  
+  Option C: Mount Google Drive and access files there:
+    from google.colab import drive
+    drive.mount('/content/drive')
+
+
+STEP 4 — Run the pipeline
+──────────────────────────
+  In a new cell, paste and run:
+
+    import sys
+    sys.path.insert(0, '/content')   # or wherever pipeline.py is
+    from pipeline import run_pipeline
+    top100, all_villages, gdf = run_pipeline()
+
+
+STEP 5 — Run visualizations
+─────────────────────────────
+  In a new cell:
+
+    from visualization import run_visualizations
+    import pandas as pd
+
+    top100['growth_percentile'] = top100['economic_growth_score'].rank(pct=True)*100
+    top100['growth_tier'] = pd.cut(top100['growth_percentile'],
+        bins=[0,50,75,90,97,100],
+        labels=['Baseline','Moderate','High','Very High','Elite'])
+    all_villages['growth_percentile'] = all_villages['economic_growth_score'].rank(pct=True)*100
+    all_villages['growth_tier'] = pd.cut(all_villages['growth_percentile'],
+        bins=[0,50,75,90,97,100],
+        labels=['Baseline','Moderate','High','Very High','Elite'])
+
+    paths = run_visualizations(top100, all_villages)
+    print(paths)
+
+
+STEP 6 — Download outputs from Colab
+──────────────────────────────────────
+  In a new cell:
+
+    from google.colab import files
+    files.download('data/outputs/top100_villages.csv')
+    files.download('data/outputs/village_growth_map.html')
+    files.download('data/outputs/growth_dashboard.html')
+
+  Or zip everything:
+    !zip -r village_outputs.zip data/outputs/
+    files.download('village_outputs.zip')
+
+
+═══════════════════════════════════════════════════════════════════════
+OPTION C — GOOGLE EARTH ENGINE (Production / Real Satellite Data)
+═══════════════════════════════════════════════════════════════════════
+
+STEP 1 — Sign up for GEE
+──────────────────────────
+  Go to: https://earthengine.google.com/signup/
+  Sign in with a Google account → request access (usually instant for research)
+
+
+STEP 2 — Open the GEE Code Editor
+────────────────────────────────────
+  Go to: https://code.earthengine.google.com
+
+
+STEP 3 — Run the GEE JavaScript script
+────────────────────────────────────────
+  Open: src/ingestion/gee_extraction.js
+  Copy the entire file contents
+  Paste into the GEE Code Editor
+  Click "Run"
+  
+  → Click "Tasks" tab → Click "Run" on the export task
+  → Data saves to your Google Drive as:
+      VillageGrowth/village_indicators.csv
+
+
+STEP 4 — Use real data in the pipeline
+────────────────────────────────────────
+  In pipeline.py, replace the generate_synthetic_data() call:
+  
+    # BEFORE (synthetic):
+    df_raw = generate_synthetic_data()
+    
+    # AFTER (real GEE data):
+    df_raw = pd.read_csv('data/raw/village_indicators.csv')
+  
+  Then run STEPS 5-7 from Option A as normal.
+
+
+═══════════════════════════════════════════════════════════════════════
+OUTPUT FILES REFERENCE
+═══════════════════════════════════════════════════════════════════════
+
+File                              Format    Description
+─────────────────────────────────────────────────────────────────────
+data/outputs/top100_villages.csv  CSV       Ranked Top 100 — 22 columns
+data/outputs/all_villages_ranked.csv CSV   All 6,283 villages ranked
+data/outputs/top100_villages.geojson GeoJSON Spatial points (QGIS ready)
+data/outputs/village_growth_map.html HTML  Interactive Folium map
+data/outputs/growth_dashboard.html  HTML  Plotly analytics dashboard
+data/outputs/growth_charts.png      PNG   Static summary charts
+reports/presentation.html           HTML  5-slide presentation deck
+src/ingestion/gee_extraction.js     JS    Google Earth Engine script
+src/pipeline.py                     Python Full pipeline module
+src/visualization.py                Python Visualization module
+README.md                           MD    Project documentation
+
+
+═══════════════════════════════════════════════════════════════════════
+TROUBLESHOOTING
+═══════════════════════════════════════════════════════════════════════
+
+Problem: ModuleNotFoundError: No module named 'geopandas'
+Solution: pip install geopandas --break-system-packages  (on some Linux)
+          Or use a virtual environment (see STEP 3)
+
+Problem: GDAL or Fiona installation fails
+Solution: pip install geopandas --no-deps
+          Then: pip install pyproj shapely fiona
+
+Problem: Folium map is blank
+Solution: Open the HTML in Chrome or Firefox — Edge sometimes blocks local files
+          Or run: python -m http.server 8000 in the outputs folder
+
+Problem: GEE authentication fails
+Solution: Run in terminal: earthengine authenticate
+          Follow the browser link to get your token
+
+Problem: Memory error on large datasets
+Solution: Reduce STATE_VILLAGE_COUNT values in pipeline.py
+          Or process one state at a time by filtering df_raw
+
+
+═══════════════════════════════════════════════════════════════════════
+SUBMISSION CHECKLIST
+═══════════════════════════════════════════════════════════════════════
+
+Before submitting, verify you have:
+
+  [✓] top100_villages.csv          — ranked dataset with scores
+  [✓] all_villages_ranked.csv      — full village database
+  [✓] top100_villages.geojson      — geographic output
+  [✓] village_growth_map.html      — interactive map visualization
+  [✓] growth_dashboard.html        — analytics dashboard
+  [✓] growth_charts.png            — static chart for presentation
+  [✓] presentation.html            — 5-slide summary deck
+  [✓] pipeline.py                  — reproducible code with comments
+  [✓] visualization.py             — visualization module
+  [✓] gee_extraction.js            — GEE script for real data
+  [✓] README.md                    — methodology documentation
+  [✓] requirements.txt             — dependency list
+
+
+Good luck with the submission!
