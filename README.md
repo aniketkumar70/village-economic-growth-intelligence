@@ -70,6 +70,3 @@ All components normalized to [0,1] using min-max scaling before weighting.
 - `data/outputs/top100_villages.geojson` — Spatial output
 - `data/outputs/village_growth_map.html` — Interactive Folium map
 - `reports/presentation.html` — Executive summary slides
-
-## Author
-Built for Kritter Software Technologies Assignment — 2025
